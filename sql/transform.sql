@@ -30,61 +30,61 @@ select * from dim_date;
 
 create or replace table dim_product as
 select
-    row_number() over (order by PRODUCT_SYMBOL, PRODUCT_BRAND_NAME, CATEGORY_NAME) AS dim_productid,
-    PRODUCT_SYMBOL,
-    PRODUCT_BRAND_NAME,
-    CATEGORY_NAME,
-    PRODUCT_SEGMENT_NAME,
-    PRODUCT_PRIMARY_SEGMENT_FLAG
+    row_number() over (order by product_symbol, product_brand_name, category_name) AS dim_productid,
+    product_symbol,
+    product_brand_name,
+    category_name,
+    product_segment_name,
+    product_primary_segment_flag
 from sales_staging
 group by 
-    PRODUCT_SYMBOL,
-    PRODUCT_BRAND_NAME,
-    CATEGORY_NAME,
-    PRODUCT_SEGMENT_NAME,
-    PRODUCT_PRIMARY_SEGMENT_FLAG
-order by PRODUCT_SYMBOL;
+    product_symbol,
+    product_brand_name,
+    category_name,
+    product_segment_name,
+    product_primary_segment_flag
+order by product_symbol;
 
 select * from dim_product;
 
 create or replace table dim_geo as
 select
     row_number() over (order by GEO, GEO_TYPE) as dim_geoid,
-    GEO,
-    GEO_TYPE
+    geo,
+    geo_type
 from sales_staging
-group by GEO, GEO_TYPE
-order by GEO;
+group by geo, geo_type
+order by geo;
 
 select * from dim_geo;
 
 create or replace table dim_merchant as
 select
-    row_number() over (order by MERCHANT_CHANNEL, MERCHANT_SUBINDUSTRY_NAME) as dim_merchantid,
-    MERCHANT_CHANNEL,
-    MERCHANT_SUBINDUSTRY_NAME
+    row_number() over (order by merchant_channel, merchant_subindustry_name) as dim_merchantid,
+    merchant_channel,
+    merchant_subindustry_name
 from sales_staging
-group by MERCHANT_CHANNEL, MERCHANT_SUBINDUSTRY_NAME;
+group by merchant_channel, merchant_subindustry_name;
 
 select * from dim_merchant;
 
 create or replace table fact_sales as
 select
-    s.ITEM_COUNT,
-    s.TRANS_COUNT,
-    s.SPEND_AMOUNT_USD,
+    s.item_count,
+    s.trans_count,
+    s.spend_amount_usd,
     d.dim_dateid,
     p.dim_productid,
     g.dim_geoid,
     m.dim_merchantid,
     -- 1. window func: napi eladasi rangsor osszeg alapjan
-    rank() over (partition by d.dim_dateid order by s.SPEND_AMOUNT_USD desc) as sales_rank_daily,
+    rank() over (partition by d.dim_dateid order by s.spend_amount_usd desc) as sales_rank_daily,
     -- 2. window func: running total idorendben
-    sum(s.SPEND_AMOUNT_USD) over (order by d.date rows between unbounded preceding and current row) as total_cumulative_spend
+    sum(s.spend_amount_usd) over (order by d.date rows between unbounded preceding and current row) as total_cumulative_spend
 from sales_staging s
 join dim_date d on cast(s.trans_date as date) = d.date
-join dim_product p on s.PRODUCT_SYMBOL = p.PRODUCT_SYMBOL and s.PRODUCT_BRAND_NAME = p.PRODUCT_BRAND_NAME
-join dim_geo g on s.GEO = g.GEO and s.GEO_TYPE = g.GEO_TYPE
-join dim_merchant m on s.MERCHANT_CHANNEL = m.MERCHANT_CHANNEL and s.MERCHANT_SUBINDUSTRY_NAME = m.MERCHANT_SUBINDUSTRY_NAME;
+join dim_product p on s.product_symbol = p.product_symbol and s.product_brand_name = p.product_brand_name
+join dim_geo g on s.geo = g.geo and s.geo_type = g.geo_type
+join dim_merchant m on s.merchant_channel = m.merchant_channel and s.merchant_subindustry_name = m.merchant_subindustry_name;
 
 select * from fact_sales;

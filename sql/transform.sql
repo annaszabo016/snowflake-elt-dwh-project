@@ -83,7 +83,7 @@ select
     sum(s.spend_amount_usd) over (order by d.date rows between unbounded preceding and current row) as total_cumulative_spend
 from sales_staging s
 join dim_date d on cast(s.trans_date as date) = d.date
-join dim_product p on s.product_symbol = p.product_symbol and s.product_brand_name = p.product_brand_name
+join dim_product p on s.product_symbol = p.product_symbol and s.product_brand_name = p.product_brand_name and s.category_name = p.category_name and s.product_segment_name = p.product_segment_name
 join dim_geo g on s.geo = g.geo and s.geo_type = g.geo_type
 join dim_merchant m on s.merchant_channel = m.merchant_channel and s.merchant_subindustry_name = m.merchant_subindustry_name;
 

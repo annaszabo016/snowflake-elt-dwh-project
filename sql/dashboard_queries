@@ -21,12 +21,12 @@ ORDER BY d.date;
 
 --3.transaction value/item count
 SELECT 
-    d.date, 
-    SUM(f.SPEND_AMOUNT_USD) as daily_spend
+    f.ITEM_COUNT, 
+    f.SPEND_AMOUNT_USD,
+    p.CATEGORY_NAME
 FROM fact_sales f
-JOIN dim_date d ON f.dim_dateid = d.dim_dateid
-GROUP BY d.date
-ORDER BY d.date;
+JOIN dim_product p ON f.dim_productid = p.dim_productid
+WHERE f.SPEND_AMOUNT_USD > 0;
 
 --4.busiest days of the week/month
 SELECT 

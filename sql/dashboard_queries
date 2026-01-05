@@ -1,53 +1,53 @@
 --1. top 10 categories
-SELECT 
-    p.CATEGORY_NAME, 
-    SUM(f.SPEND_AMOUNT_USD) as total_spend
-FROM fact_sales f
-JOIN dim_product p ON f.dim_productid = p.dim_productid
-WHERE p.CATEGORY_NAME IS NOT NULL 
-  AND p.CATEGORY_NAME NOT IN ('Unknown', 'n/a', 'Other') -- Kiszűrjük a felesleget
-GROUP BY p.CATEGORY_NAME
-ORDER BY total_spend DESC 
-LIMIT 10;
+select 
+    p.category_name, 
+    sum(f.spend_amount_usd) as total_spend
+from fact_sales f
+join dim_product p on f.dim_productid = p.dim_productid
+where p.category_name is not null 
+  and p.category_name not in ('Unknown', 'n/a', 'Other') 
+group by p.category_name
+order by total_spend desc 
+limit 10;
 
 --2.daily sales
-SELECT 
+select 
     d.date, 
-    SUM(f.SPEND_AMOUNT_USD) as daily_spend
-FROM fact_sales f
-JOIN dim_date d ON f.dim_dateid = d.dim_dateid
-GROUP BY d.date
-ORDER BY d.date;
+    sum(f.spend_amount_usd) as daily_spend
+from fact_sales f
+join dim_date d on f.dim_dateid = d.dim_dateid
+group by d.date
+order by d.date;
 
 --3.transaction value/item count
-SELECT 
-    f.ITEM_COUNT, 
-    f.SPEND_AMOUNT_USD,
-    p.CATEGORY_NAME
-FROM fact_sales f
-JOIN dim_product p ON f.dim_productid = p.dim_productid
-WHERE f.SPEND_AMOUNT_USD > 0;
+select 
+    f.item_count, 
+    f.spend_amount_usd,
+    p.category_name
+from fact_sales f
+join dim_product p on f.dim_productid = p.dim_productid
+where f.spend_amount_usd > 0;
 
 --4.busiest days of the week/month
-SELECT 
+select
     d.day_of_week_name,
     d.month,
-    SUM(f.SPEND_AMOUNT_USD) as total_revenue
-FROM fact_sales f
-JOIN dim_date d ON f.dim_dateid = d.dim_dateid
-GROUP BY d.day_of_week_name, d.month
-ORDER BY SUM(f.SPEND_AMOUNT_USD) DESC;
+    sum(f.spend_amount_usd) as total_revenue
+from fact_sales f
+join dim_date d on f.dim_dateid = d.dim_dateid
+group by d.day_of_week_name, d.month
+order by sum(f.spend_amount_usd) desc;
 
 --5.avg transaction value
-SELECT 
-    ROUND(AVG(SPEND_AMOUNT_USD), 2) as avg_basket_value
-FROM fact_sales;
+select 
+    round(avg(spend_amount_usd), 2) as avg_basket_value
+from fact_sales;
 
 --6.revenue by merchant channel
-SELECT 
-    m.MERCHANT_CHANNEL, 
-    SUM(f.SPEND_AMOUNT_USD) as total_revenue
-FROM fact_sales f
-JOIN dim_merchant m ON f.dim_merchantid = m.dim_merchantid
-GROUP BY 1
-ORDER BY 2 DESC;
+select 
+    m.merchant_channel, 
+    sum(f.spend_amount_usd) as total_revenue
+from fact_sales f
+join dim_merchant m on f.dim_merchantid = m.dim_merchantid
+group by 1
+order by 2 desc;
